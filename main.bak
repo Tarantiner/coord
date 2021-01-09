@@ -1,0 +1,96 @@
+package main
+
+import (
+	"fmt"
+	"math"
+)
+
+var x, y float64
+
+const gcjA = 6378245
+const gcjEE = 0.00669342162296594323 // f = 1/298.3; e^2 = 2*f - f**2
+const BdDLAT = 0.0060
+const BdDLON = 0.0065
+
+type POS struct {
+	LNG, LAT float64
+}
+
+var pos POS
+
+func Wgs2Gcj() {
+	x = pos.LNG - 105
+	y = pos.LAT - 35
+	dlatM := -100 + 2*x + 3*y + 0.2*y*y + 0.1*x*y + 0.2*math.Sqrt(math.Abs(x)) + (
+		2*math.Sin(x*6*math.Pi) + 2*math.Sin(x*2*math.Pi) +
+			2*math.Sin(y*math.Pi) + 4*math.Sin(y/3*math.Pi) +
+			16*math.Sin(y/12*math.Pi) + 32*math.Sin(y/30*math.Pi))*20/3
+
+	dlngM := 300 + x + 2*y + 0.1*x*x + 0.1*x*y + 0.1*math.Sqrt(math.Abs(x)) + (
+		2*math.Sin(x*6*math.Pi) + 2*math.Sin(x*2*math.Pi) +
+			2*math.Sin(x*math.Pi) + 4*math.Sin(x/3*math.Pi) +
+			15*math.Sin(x/12*math.Pi) + 30*math.Sin(x/30*math.Pi))*20/3
+
+	radLAT := pos.LAT / 180 * math.Pi
+	magic := 1 - gcjEE*math.Pow(math.Sin(radLAT), 2.0)
+	latDegArclen := (math.Pi / 180) * (gcjA * (1 - gcjEE)) / math.Pow(magic, 1.5)
+	lngDegArclen := (math.Pi / 180) * (gcjA * math.Cos(radLAT) / math.Sqrt(magic))
+	pos.LNG = pos.LNG + (dlngM / lngDegArclen)
+	pos.LAT = pos.LAT + (dlatM / latDegArclen)
+}
+
+func Gcj2BD() {
+	fmt.Println(pos.LNG, pos.LAT)
+	x = pos.LNG
+	y = pos.LAT
+	r := math.Sqrt(x*x+y*y) + 0.00002*math.Sin(y*math.Pi*3000/180)
+	t := math.Atan2(y, x) + 0.000003*math.Cos(x*math.Pi*3000/180)
+	pos.LNG = r*math.Cos(t) + BdDLON
+	pos.LAT = r*math.Sin(t) + BdDLAT
+}
+
+func Wgs2BD() {
+	// wgs坐标系转百度坐标系
+	Wgs2Gcj()
+	Gcj2BD()
+}
+
+func BD2Gcj() {
+	x = pos.LNG - BdDLON
+	y = pos.LAT - BdDLAT
+	r := math.Sqrt(x*x+y*y) + 0.00002*math.Sin(y*math.Pi*3000/180)
+	t := math.Atan2(y, x) + 0.000003*math.Cos(x*math.Pi*3000/180)
+	fmt.Println(r)
+	fmt.Println(t)
+	pos.LNG = r*math.Cos(t)
+	pos.LAT = r*math.Sin(t)
+}
+
+
+func Gcj2Wgs() {
+	oldPos := pos
+	fmt.Println(oldPos, "aa")
+	Wgs2Gcj()
+	fmt.Println(oldPos, "aa", pos)
+	pos2 := POS{
+		LNG: pos.LNG - oldPos.LNG,
+		LAT: pos.LAT - oldPos.LAT,
+	}
+	pos.LNG = oldPos.LNG - pos2.LNG
+	pos.LAT = oldPos.LAT - pos2.LAT
+}
+
+func BD2Wgs() {
+	BD2Gcj()
+	Gcj2Wgs()
+}
+
+func main() {
+	// 参考网站：https://artoria2e5.github.io/PRCoords/demo?lat=39&lon=114.429444
+	lng := 114.429444
+	lat := 39.0
+	pos = POS{LNG: lng, LAT: lat}
+	//Wgs2BD()
+	BD2Wgs()
+	fmt.Println(pos.LNG, pos.LAT)
+}

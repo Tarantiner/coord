@@ -3,7 +3,7 @@ package main
 import (
 	"encoding/json"
 	"fmt"
-	"geo/loc"
+	"coord/loc"
 	"net/http"
 	"strconv"
 )
