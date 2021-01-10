@@ -1,9 +1,9 @@
 package main
 
 import (
+	"coord/loc"
 	"encoding/json"
 	"fmt"
-	"geo/loc"
 	"net/http"
 	"strconv"
 )
