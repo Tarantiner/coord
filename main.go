@@ -15,6 +15,15 @@ type MsgBox struct {
 	LAT     float64 `json:"latitude"`
 }
 
+func HandleResult(mg *MsgBox, pos loc.POS, w http.ResponseWriter) {
+	mg.Success = 1
+	mg.LNG = pos.LNG
+	mg.LAT = pos.LAT
+	b, _ := json.Marshal(mg)
+	fmt.Println(string(b))
+	w.Write(b)
+}
+
 func GeoAPI(w http.ResponseWriter, r *http.Request) {
 	qMap := r.URL.Query()
 	tp := qMap.Get("type")
@@ -56,56 +65,31 @@ func GeoAPI(w http.ResponseWriter, r *http.Request) {
 
 	if tp == "wgs2gcj" {
 		pos := loc.Wgs2Gcj(loc.POS{LNG: lng, LAT: lat})
-		mg.Success = 1
-		mg.LNG = pos.LNG
-		mg.LAT = pos.LAT
-		b, _ := json.Marshal(mg)
-		fmt.Println(string(b))
-		w.Write(b)
+		HandleResult(&mg, pos, w)
 		return
 	}
 
 	if tp == "gcj2bd" {
 		pos := loc.Gcj2BD(loc.POS{LNG: lng, LAT: lat})
-		mg.Success = 1
-		mg.LNG = pos.LNG
-		mg.LAT = pos.LAT
-		b, _ := json.Marshal(mg)
-		fmt.Println(string(b))
-		w.Write(b)
+		HandleResult(&mg, pos, w)
 		return
 	}
 
 	if tp == "bd2gcj" {
 		pos := loc.BD2Gcj(loc.POS{LNG: lng, LAT: lat})
-		mg.Success = 1
-		mg.LNG = pos.LNG
-		mg.LAT = pos.LAT
-		b, _ := json.Marshal(mg)
-		fmt.Println(string(b))
-		w.Write(b)
+		HandleResult(&mg, pos, w)
 		return
 	}
 
 	if tp == "gcj2wgs" {
 		pos := loc.Gcj2Wgs(loc.POS{LNG: lng, LAT: lat})
-		mg.Success = 1
-		mg.LNG = pos.LNG
-		mg.LAT = pos.LAT
-		b, _ := json.Marshal(mg)
-		fmt.Println(string(b))
-		w.Write(b)
+		HandleResult(&mg, pos, w)
 		return
 	}
 
 	if tp == "bd2wgs" {
 		pos := loc.BD2Wgs(loc.POS{LNG: lng, LAT: lat})
-		mg.Success = 1
-		mg.LNG = pos.LNG
-		mg.LAT = pos.LAT
-		b, _ := json.Marshal(mg)
-		fmt.Println(string(b))
-		w.Write(b)
+		HandleResult(&mg, pos, w)
 		return
 	}
 
