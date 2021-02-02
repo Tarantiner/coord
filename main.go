@@ -68,6 +68,12 @@ func GeoAPI(w http.ResponseWriter, r *http.Request) {
 		HandleResult(&mg, pos, w)
 		return
 	}
+	
+	if tp == "wgs2bd" {
+		pos := loc.Wgs2BD(loc.POS{LNG: lng, LAT: lat})
+		HandleResult(&mg, pos, w)
+		return
+	}
 
 	if tp == "gcj2bd" {
 		pos := loc.Gcj2BD(loc.POS{LNG: lng, LAT: lat})
