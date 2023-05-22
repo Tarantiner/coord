@@ -1,23 +1,32 @@
 package main
 
 import (
-	"encoding/json"
-	"fmt"
 	"coord/loc"
+	"encoding/json"
+	"flag"
+	"fmt"
 	"net/http"
 	"strconv"
 )
 
+var port string
+
+func init() {
+	flag.StringVar(&port, "port", "8000", "web监听端口")
+	flag.Parse()
+}
+
 type MsgBox struct {
+	Type    string  `json:"type"`
 	Success int     `json:"success"`
 	ERR     string  `json:"error"`
-	LNG     float64 `json:"longitude"`
+	LON     float64 `json:"longitude"`
 	LAT     float64 `json:"latitude"`
 }
 
 func HandleResult(mg *MsgBox, pos loc.POS, w http.ResponseWriter) {
 	mg.Success = 1
-	mg.LNG = pos.LNG
+	mg.LON = pos.LON
 	mg.LAT = pos.LAT
 	b, _ := json.Marshal(mg)
 	fmt.Println(string(b))
@@ -35,9 +44,10 @@ func GeoAPI(w http.ResponseWriter, r *http.Request) {
 		w.Write(b)
 		return
 	}
-	lngStr := qMap.Get("lng")
+	mg.Type = tp
+	lonStr := qMap.Get("lon")
 	latStr := qMap.Get("lat")
-	lng, err := strconv.ParseFloat(lngStr, 64)
+	lon, err := strconv.ParseFloat(lonStr, 64)
 	if err != nil {
 		mg.ERR = "请提供有效经纬度"
 		b, _ := json.Marshal(mg)
@@ -54,8 +64,8 @@ func GeoAPI(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if -180.0 <= lng && lng <= 180.0 && -90.0 <= lat && lat <= 90.0 {
-	}else{
+	if -180.0 <= lon && lon <= 180.0 && -90.0 <= lat && lat <= 90.0 {
+	} else {
 		mg.ERR = "请提供有效经纬度"
 		b, _ := json.Marshal(mg)
 		fmt.Println(string(b), mg)
@@ -64,37 +74,37 @@ func GeoAPI(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if tp == "wgs2gcj" {
-		pos := loc.Wgs2Gcj(loc.POS{LNG: lng, LAT: lat})
+		pos := loc.Wgs2Gcj(loc.POS{LON: lon, LAT: lat})
 		HandleResult(&mg, pos, w)
 		return
 	}
-	
+
 	if tp == "wgs2bd" {
-		pos := loc.Wgs2BD(loc.POS{LNG: lng, LAT: lat})
+		pos := loc.Wgs2BD(loc.POS{LON: lon, LAT: lat})
 		HandleResult(&mg, pos, w)
 		return
 	}
 
 	if tp == "gcj2bd" {
-		pos := loc.Gcj2BD(loc.POS{LNG: lng, LAT: lat})
+		pos := loc.Gcj2BD(loc.POS{LON: lon, LAT: lat})
 		HandleResult(&mg, pos, w)
 		return
 	}
 
 	if tp == "bd2gcj" {
-		pos := loc.BD2Gcj(loc.POS{LNG: lng, LAT: lat})
+		pos := loc.BD2Gcj(loc.POS{LON: lon, LAT: lat})
 		HandleResult(&mg, pos, w)
 		return
 	}
 
 	if tp == "gcj2wgs" {
-		pos := loc.Gcj2Wgs(loc.POS{LNG: lng, LAT: lat})
+		pos := loc.Gcj2Wgs(loc.POS{LON: lon, LAT: lat})
 		HandleResult(&mg, pos, w)
 		return
 	}
 
 	if tp == "bd2wgs" {
-		pos := loc.BD2Wgs(loc.POS{LNG: lng, LAT: lat})
+		pos := loc.BD2Wgs(loc.POS{LON: lon, LAT: lat})
 		HandleResult(&mg, pos, w)
 		return
 	}
@@ -107,6 +117,7 @@ func GeoAPI(w http.ResponseWriter, r *http.Request) {
 }
 
 func main() {
+	loc.TestPos()
 	http.HandleFunc("/geo/api", GeoAPI)
-	http.ListenAndServe(":8000", nil)
+	http.ListenAndServe(":"+port, nil)
 }

@@ -15,18 +15,18 @@ const BdDLAT = 0.0060
 const BdDLON = 0.0065
 
 type POS struct {
-	LNG, LAT float64
+	LON, LAT float64
 }
 
 func Wgs2Gcj(pos POS) POS {
-	x = pos.LNG - 105
+	x = pos.LON - 105
 	y = pos.LAT - 35
 	dlatM := -100 + 2*x + 3*y + 0.2*y*y + 0.1*x*y + 0.2*math.Sqrt(math.Abs(x)) + (
 		2*math.Sin(x*6*math.Pi) + 2*math.Sin(x*2*math.Pi) +
 			2*math.Sin(y*math.Pi) + 4*math.Sin(y/3*math.Pi) +
 			16*math.Sin(y/12*math.Pi) + 32*math.Sin(y/30*math.Pi))*20/3
 
-	dlngM := 300 + x + 2*y + 0.1*x*x + 0.1*x*y + 0.1*math.Sqrt(math.Abs(x)) + (
+	dlonM := 300 + x + 2*y + 0.1*x*x + 0.1*x*y + 0.1*math.Sqrt(math.Abs(x)) + (
 		2*math.Sin(x*6*math.Pi) + 2*math.Sin(x*2*math.Pi) +
 			2*math.Sin(x*math.Pi) + 4*math.Sin(x/3*math.Pi) +
 			15*math.Sin(x/12*math.Pi) + 30*math.Sin(x/30*math.Pi))*20/3
@@ -34,20 +34,20 @@ func Wgs2Gcj(pos POS) POS {
 	radLAT := pos.LAT / 180 * math.Pi
 	magic := 1 - gcjEE*math.Pow(math.Sin(radLAT), 2.0)
 	latDegArclen := (math.Pi / 180) * (gcjA * (1 - gcjEE)) / math.Pow(magic, 1.5)
-	lngDegArclen := (math.Pi / 180) * (gcjA * math.Cos(radLAT) / math.Sqrt(magic))
+	lonDegArclen := (math.Pi / 180) * (gcjA * math.Cos(radLAT) / math.Sqrt(magic))
 	return POS{
-		LNG: pos.LNG + (dlngM / lngDegArclen),
+		LON: pos.LON + (dlonM / lonDegArclen),
 		LAT: pos.LAT + (dlatM / latDegArclen),
 	}
 }
 
 func Gcj2BD(pos POS) POS {
-	x = pos.LNG
+	x = pos.LON
 	y = pos.LAT
 	r := math.Sqrt(x*x+y*y) + 0.00002*math.Sin(y*math.Pi*3000/180)
 	t := math.Atan2(y, x) + 0.000003*math.Cos(x*math.Pi*3000/180)
 	return POS{
-		LNG: r*math.Cos(t) + BdDLON,
+		LON: r*math.Cos(t) + BdDLON,
 		LAT: r*math.Sin(t) + BdDLAT,
 	}
 }
@@ -59,19 +59,19 @@ func Wgs2BD(pos POS) POS {
 }
 
 func BD2Gcj(pos POS) POS {
-	x = pos.LNG - BdDLON
+	x = pos.LON - BdDLON
 	y = pos.LAT - BdDLAT
 	r := math.Sqrt(x*x+y*y) + 0.00002*math.Sin(y*math.Pi*3000/180)
 	t := math.Atan2(y, x) + 0.000003*math.Cos(x*math.Pi*3000/180)
 	return POS{
-		LNG: r*math.Cos(t),
+		LON: r*math.Cos(t),
 		LAT: r*math.Sin(t),
 	}
 }
 
 func CoordDiff(pos1, pos2 POS) POS {
 	return POS{
-		LNG: pos1.LNG - pos2.LNG,
+		LON: pos1.LON - pos2.LON,
 		LAT: pos1.LAT - pos2.LAT,
 	}
 }
@@ -87,12 +87,13 @@ func BD2Wgs(pos POS) POS {
 }
 
 func TestPos() {
-	lng := 114.429444
+	lon := 114.429444
 	lat := 39.0
-	fmt.Println(Wgs2Gcj(POS{LNG: lng, LAT: lat}))
-	fmt.Println(Wgs2BD(POS{LNG: lng, LAT: lat}))
-	fmt.Println(Gcj2Wgs(POS{LNG: lng, LAT: lat}))
-	fmt.Println(BD2Wgs(POS{LNG: lng, LAT: lat}))
-	fmt.Println(Gcj2BD(POS{LNG: lng, LAT: lat}))
-	fmt.Println(BD2Gcj(POS{LNG: lng, LAT: lat}))
+	fmt.Println("正在测试坐标转换，114.429444|39.0")
+	fmt.Println("/geo/api/&type=wgs2gcj", Wgs2Gcj(POS{LON: lon, LAT: lat}))
+	fmt.Println("/geo/api/&type=wgs2bd", Wgs2BD(POS{LON: lon, LAT: lat}))
+	fmt.Println("/geo/api/&type=gcj2wgs", Gcj2Wgs(POS{LON: lon, LAT: lat}))
+	fmt.Println("/geo/api/&type=gcj2bd", Gcj2BD(POS{LON: lon, LAT: lat}))
+	fmt.Println("/geo/api/&type=bd2wgs", BD2Wgs(POS{LON: lon, LAT: lat}))
+	fmt.Println("/geo/api/&type=bd2gcj", BD2Gcj(POS{LON: lon, LAT: lat}))
 }
