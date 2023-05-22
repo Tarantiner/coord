@@ -26,8 +26,8 @@ type MsgBox struct {
 
 func HandleResult(mg *MsgBox, pos loc.POS, w http.ResponseWriter) {
 	mg.Success = 1
-	mg.LON = pos.LON
-	mg.LAT = pos.LAT
+	mg.LON, _ = strconv.ParseFloat(fmt.Sprintf("%.6f", pos.LON), 64)
+	mg.LAT, _ = strconv.ParseFloat(fmt.Sprintf("%.6f", pos.LAT), 64)
 	b, _ := json.Marshal(mg)
 	fmt.Println(string(b))
 	w.Write(b)
