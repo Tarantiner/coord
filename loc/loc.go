@@ -52,8 +52,16 @@ func Gcj2BD(pos POS) POS {
 	}
 }
 
+func outOfChina(pos POS) bool {
+	return !(pos.LON > 73.66 && pos.LON < 135.05 && pos.LAT > 3.86 && pos.LAT < 53.55)
+}
+
 func Wgs2BD(pos POS) POS {
 	// wgs坐标系转百度坐标系
+	if outOfChina(pos){
+		fmt.Println("中国以外")
+		return pos
+	}
 	pos = Wgs2Gcj(pos)
 	return Gcj2BD(pos)
 }
@@ -61,8 +69,8 @@ func Wgs2BD(pos POS) POS {
 func BD2Gcj(pos POS) POS {
 	x = pos.LON - BdDLON
 	y = pos.LAT - BdDLAT
-	r := math.Sqrt(x*x+y*y) + 0.00002*math.Sin(y*math.Pi*3000/180)
-	t := math.Atan2(y, x) + 0.000003*math.Cos(x*math.Pi*3000/180)
+	r := math.Sqrt(x*x+y*y) - 0.00002*math.Sin(y*math.Pi*3000/180)
+	t := math.Atan2(y, x) - 0.000003*math.Cos(x*math.Pi*3000/180)
 	return POS{
 		LON: r*math.Cos(t),
 		LAT: r*math.Sin(t),
@@ -82,6 +90,10 @@ func Gcj2Wgs(pos POS) POS {
 }
 
 func BD2Wgs(pos POS) POS {
+	if outOfChina(pos){
+		fmt.Println("中国以外")
+		return pos
+	}
 	pos = BD2Gcj(pos)
 	return Gcj2Wgs(pos)
 }
