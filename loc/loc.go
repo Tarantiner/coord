@@ -98,14 +98,14 @@ func BD2Wgs(pos POS) POS {
 	return Gcj2Wgs(pos)
 }
 
-func TestPos() {
+func TestPos(port string) {
 	lon := 114.429444
-	lat := 39.0
+	lat := 39.123456
 	fmt.Println("正在测试坐标转换，114.429444|39.0")
-	fmt.Println("/geo/api/&type=wgs2gcj", Wgs2Gcj(POS{LON: lon, LAT: lat}))
-	fmt.Println("/geo/api/&type=wgs2bd", Wgs2BD(POS{LON: lon, LAT: lat}))
-	fmt.Println("/geo/api/&type=gcj2wgs", Gcj2Wgs(POS{LON: lon, LAT: lat}))
-	fmt.Println("/geo/api/&type=gcj2bd", Gcj2BD(POS{LON: lon, LAT: lat}))
-	fmt.Println("/geo/api/&type=bd2wgs", BD2Wgs(POS{LON: lon, LAT: lat}))
-	fmt.Println("/geo/api/&type=bd2gcj", BD2Gcj(POS{LON: lon, LAT: lat}))
+	fmt.Println(fmt.Sprintf("http://127.0.0.1:%s/geo/api?lon=%f&lat=%f&type=wgs2gcj", port, lon, lat), Wgs2Gcj(POS{LON: lon, LAT: lat}))
+	fmt.Println(fmt.Sprintf("http://127.0.0.1:%s/geo/api?lon=%f&lat=%f&type=wgs2bd", port, lon, lat), Wgs2BD(POS{LON: lon, LAT: lat}))
+	fmt.Println(fmt.Sprintf("http://127.0.0.1:%s/geo/api?lon=%f&lat=%f&type=gcj2wgs", port, lon, lat), Gcj2Wgs(POS{LON: lon, LAT: lat}))
+	fmt.Println(fmt.Sprintf("http://127.0.0.1:%s/geo/api?lon=%f&lat=%f&type=gcj2bd", port, lon, lat), Gcj2BD(POS{LON: lon, LAT: lat}))
+	fmt.Println(fmt.Sprintf("http://127.0.0.1:%s/geo/api?lon=%f&lat=%f&type=bd2wgs", port, lon, lat), BD2Wgs(POS{LON: lon, LAT: lat}))
+	fmt.Println(fmt.Sprintf("http://127.0.0.1:%s/geo/api?lon=%f&lat=%f&type=bd2gcj", port, lon, lat), BD2Gcj(POS{LON: lon, LAT: lat}))
 }

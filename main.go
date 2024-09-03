@@ -117,7 +117,7 @@ func GeoAPI(w http.ResponseWriter, r *http.Request) {
 }
 
 func main() {
-	loc.TestPos()
+	loc.TestPos(port)
 	http.HandleFunc("/geo/api", GeoAPI)
 	http.ListenAndServe(":"+port, nil)
 }
